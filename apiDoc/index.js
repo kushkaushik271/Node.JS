@@ -6,31 +6,31 @@ const path = require('path');
 const router = express.Router();
 
 const swaggerOptions = {
-   swaggerDefinition: {
-      openapi: '3.0.0',
-      info: {
-         title: 'User Management API',
-         version: '1.0.0',
-         description: 'API documentation for user management',
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'User Management API',
+      version: '1.0.0',
+      description: 'API documentation for user management',
+    },
+    servers: [
+      {
+        url: `http://localhost:${config.PORT}/api/um/users`,
       },
-      servers: [
-         {
-            url: `http://localhost:${config.PORT}/api/um/users`,
-         },
-      ],
-      components: {
-         securitySchemes: {
-            BearerAuth: {
-               type: 'http',
-               scheme: 'bearer',
-               bearerFormat: 'JWT',
-               description: 'Enter your JWT token in the format: Bearer <token>',
-            },
-         },
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your JWT token in the format: Bearer <token>',
+        },
       },
-      security: [{ BearerAuth: [] }],
-   },
-   apis: [path.join(__dirname, './swagger.js')],
+    },
+    security: [{ BearerAuth: [] }],
+  },
+  apis: [path.join(__dirname, './swagger.js')],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);

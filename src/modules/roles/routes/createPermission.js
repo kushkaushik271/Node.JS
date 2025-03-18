@@ -4,10 +4,10 @@ const roleController = require('../controller/roleController');
 const { verifyToken, checkAccess } = require('../../../../authentication/userAuth');
 
 router.post(
-   '/permissions',
-   verifyToken,
-   checkAccess(['ADMIN', []]),
-   roleController.createPermission,
+  '/permissions',
+  verifyToken,
+  checkAccess(['ADMIN', []]),
+  roleController.createPermission,
 );
 
 module.exports = router;
