@@ -38,15 +38,12 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
       let hasUserPermissionAccess = false;
 
       const userRole = await UserRole.findOne({ userID: req.user.userId }).populate("roleID");
-      // let userPermissionDocs;
 
-      // if (allowedPermissions.length > 0) {
         const userPermissionDocs = await UserPermission.find({ userID: req.user.userId }).populate("permissionID");
 
         console.log({userPermissionDocs})
         const userPermissions = userPermissionDocs.map(up => up.permissionID.permissionName);
         hasUserPermissionAccess = allowedPermissions.some(permission => userPermissions.includes(permission));
-      // }
 
       if (!hasUserPermissionAccess && userPermissionDocs?.length > 0) {
         return res.status(403).json({ message: "You don't have user permission to do that. Please contact the admin." });
@@ -86,8 +83,5 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
     }
   };
 };
-
-
-
 
 module.exports = { verifyToken, verifyRefreshToken, checkAccess };
