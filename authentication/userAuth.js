@@ -83,7 +83,7 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
       }
 
       if (hasRoleAccess) {
-        return next();
+        return next()
       }
 
       return res.status(403).json({ message: "Access Denied: You don't have a valid Role." });
