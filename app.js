@@ -1,8 +1,8 @@
 const express = require('express');
 const dbConnection = require('./database/db');
-const route = require('./src/modules/user/routes/index')
-const config = require("./config/default");
-const errorHandler = require("./src/lib/error");
+const route = require('./src/modules/user/routes/index');
+const config = require('./config/default');
+const errorHandler = require('./src/lib/error');
 const swaggerRoutes = require('./apiDoc/index');
 const roleRouter = require('./src/modules/roles/routes');
 
@@ -11,15 +11,14 @@ app.use(express.json());
 dbConnection();
 
 // swagger-doc
-app.use(swaggerRoutes) // swagger docs.
+app.use(swaggerRoutes); // swagger docs.
 
-app.use("/api/um/users", route); // routes
-app.use("/api/um/roles", roleRouter); 
+app.use('/api/um/users', route); // routes
+app.use('/api/um/roles', roleRouter);
 app.use(errorHandler); // global error handling
 
-app.listen(config.PORT, ()=> {
-    console.log(`Successfully connected to http://localhost:${ config.PORT }`);
-})
-
+app.listen(config.PORT, () => {
+  console.log(`Successfully connected to http://localhost:${config.PORT}`);
+});
 
 // rediss implementation in all routes.

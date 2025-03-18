@@ -1,7 +1,16 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const userPermissionController = require("../controller/roleController");
+const userPermissionController = require('../controller/roleController');
+const {
+  verifyToken,
+  checkAccess,
+} = require('../../../../authentication/userAuth');
 
-router.post("/userpermissions", userPermissionController.assignPermissionToUser);
+router.post(
+  '/userpermissions',
+  verifyToken,
+  checkAccess(['ADMIN', []]),
+  userPermissionController.assignPermissionToUser
+);
 
 module.exports = router;

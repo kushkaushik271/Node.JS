@@ -5,13 +5,12 @@
  *     description: User authentication operations
  */
 
-
 /**
  * @swagger
  * /signup:
  *   post:
  *     summary: Register a new user
- *     tags: 
+ *     tags:
  *       - Users
  *     description: Creates a new user and sends an email verification link
  *     requestBody:
@@ -87,14 +86,12 @@
  *                   example: "Internal Server Error"
  */
 
-
-
 /**
  * @swagger
  * /login:
  *   post:
  *     summary: Authenticate a user
- *     tags: 
+ *     tags:
  *       - Users
  *     description: Login a user with email and password
  *     requestBody:
@@ -136,13 +133,12 @@
  *                   example: "Invalid email or password"
  */
 
-
 /**
  * @swagger
  * /verify-email:
  *   post:
  *     summary: Verify user email
- *     tags: 
+ *     tags:
  *       - Users
  *     description: Verifies a user's email using the token sent in the verification email
  *     parameters:
@@ -255,7 +251,6 @@
  *                   example: "Internal server error"
  */
 
-
 /**
  * @swagger
  * /users:
@@ -296,7 +291,6 @@
  *                   type: string
  *                   example: "Unauthorized. Please provide a valid token."
  */
-
 
 /**
  * @swagger
@@ -340,4 +334,3 @@
  *                   type: string
  *                   example: "Invalid refresh token."
  */
-
