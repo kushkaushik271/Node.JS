@@ -1,4 +1,5 @@
 const userService = require('../service/userService');
+require('dotenv').config()
 
 const registerUser = async (req, res, next) => {
   try {
@@ -13,8 +14,10 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const loginData = await userService.loginUser(email, password);
-    res.status(200).json({ message: 'User login successfully!', user: loginData });
+    const { token, refreshToken } = await userService.loginUser(email, password);
+    res.setHeader('Authorization', `Bearer ${token}`);
+    res.cookie('refreshToken', refreshToken);
+    res.status(200).json({ message: 'User login successfully!'});
   } catch (error) {
     next(error);
   }
