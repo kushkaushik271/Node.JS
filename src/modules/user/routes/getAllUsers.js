@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controller/userController");
-const { verifyToken } = require("../../../../authentication/userAuth");
+const { verifyToken, checkAccess } = require("../../../../authentication/userAuth");
 
-router.get("/users", verifyToken, userController.getAllUsers);
+router.get("/users", verifyToken, checkAccess(["USER"], []), userController.getAllUsers);
 
 module.exports = router;
