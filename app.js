@@ -18,7 +18,7 @@ app.use('/api/um/roles', roleRouter);
 app.use(errorHandler); // global error handling
 
 app.listen(config.PORT, () => {
-  console.log(`Successfully connected to http://localhost:${config.PORT}`);
+   console.log(`Successfully connected to http://localhost:${config.PORT}`);
 });
 
 // rediss implementation in all routes.
