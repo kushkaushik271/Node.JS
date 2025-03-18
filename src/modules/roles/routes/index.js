@@ -1,22 +1,12 @@
 const express = require('express');
 const roleRouter = express.Router();
+const path = require('path');
+const glob = require('glob');
 
-// user permission
-roleRouter.use(require('./assignUserPermission'));
-
-roleRouter.use(require('./createRole'));
-roleRouter.use(require('./getRole'));
-roleRouter.use(require('./userRoleRoutes'));
-roleRouter.use(require('./createUserRole'));
-
-roleRouter.use(require('./fetchRoles'));
-
-// permissions
-
-roleRouter.use(require('./createPermission'));
-roleRouter.use(require('./getPermission'));
-
-// role permission
-roleRouter.use(require('./createRolePermission'));
+glob.sync(path.join(__dirname, './*.js')).forEach((file) => {
+    if (file !== __filename) {
+        roleRouter.use(require(file));
+    }
+});
 
 module.exports = roleRouter;

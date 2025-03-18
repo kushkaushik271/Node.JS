@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const glob = require('glob');
 
-router.use(require('./signupRoute'));
-router.use(require('./loginRoute'));
-router.use(require('./resetPasswordRoute'));
-router.use(require('./changePasswordRoute'));
-router.use(require('./deleteUserRoute'));
-router.use(require('./refresh-token'));
-router.use(require('./getAllUsers'));
-router.use(require('./verifyEmail'));
+glob.sync(path.join(__dirname, './*.js')).forEach((file) => {
+    if (file !== __filename) {
+        router.use(require(file));
+    }
+});
 
 module.exports = router;
