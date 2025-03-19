@@ -6,7 +6,7 @@ const { verifyToken, checkAccess } = require("../../../../authentication/userAut
 router.delete(
   "/users/:userId/roles/:roleId",
   verifyToken,
-  checkAccess(["ADMIN", []]),
+  checkAccess(["ADMIN"], []),
   userRoleController.removeRoleFromUser,
 );
 

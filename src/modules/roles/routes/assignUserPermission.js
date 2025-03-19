@@ -6,7 +6,7 @@ const { verifyToken, checkAccess } = require("../../../../authentication/userAut
 router.post(
   "/userpermissions",
   verifyToken,
-  checkAccess(["ADMIN", []]),
+  checkAccess(["ADMIN"], []),
   userPermissionController.assignPermissionToUser,
 );
 
