@@ -2,14 +2,10 @@ const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { sendResetPasswordEmail, sendVerificationEmail } = require("../../../services/emailService");
-const { validateEmail, validatePassword } = require("../../../lib/validations");
 const tempUser = require("../model/tempUserSchema");
 require("dotenv").config();
 
 const registerUser = async (username, email, password) => {
-  validateEmail(email);
-  validatePassword(password);
-
   const existingUser = await tempUser.findOne({ email });
   if (existingUser) {
     throw new Error("User already exists with this email.");
@@ -62,8 +58,6 @@ const emailVerify = async (token) => {
 };
 
 const loginUser = async (email, password) => {
-  validateEmail(email);
-  validatePassword(password);
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error("Invalid email or password.");
@@ -86,7 +80,6 @@ const loginUser = async (email, password) => {
 };
 
 const requestPasswordReset = async (email) => {
-  validateEmail(email);
   const user = await User.findOne({ email });
   if (!user) {
     throw new Error("User with this email does not exist.");

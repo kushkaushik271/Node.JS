@@ -1,7 +1,6 @@
 const userService = require("../service/userService");
 const redisClient = require("../../../lib/redisClient");
 const bcrypt = require("bcrypt");
-const { validatePassword } = require("../../../lib/validations");
 const { STATUS_CODES } = require("../../../constants/constant");
 require("dotenv").config();
 
@@ -55,7 +54,6 @@ const changePassword = async (req, res, next) => {
       return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Invalid user session." });
     }
     const { newPassword } = req.body;
-    validatePassword(newPassword);
     let userDetails = await redisClient.get(`user:${req.user.userId}`);
 
     const salt = await bcrypt.genSalt(10);
