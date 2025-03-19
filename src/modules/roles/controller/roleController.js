@@ -60,9 +60,29 @@ const createPermission = async (req, res, next) => {
   }
 };
 
+const createResources = async (req, res, next) => {
+  try {
+    const { resourceName, description } = req.body;
+
+    const response = await roleService.addResource(resourceName, description);
+    res.status(STATUS_CODES.SUCCESS).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getPermission = async (req, res, next) => {
   try {
     const response = await roleService.getRolePermission();
+    res.status(STATUS_CODES.SUCCESS).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getResources = async (req, res, next) => {
+  try {
+    const response = await roleService.fetchResources();
     res.status(STATUS_CODES.SUCCESS).json(response);
   } catch (error) {
     next(error);
@@ -100,6 +120,17 @@ const assignPermissionToUser = async (req, res) => {
   }
 };
 
+const assignPermissionToResource = async (req, res) => {
+  try {
+    const { userID, resourceID } = req.body;
+
+    const result = await roleService.assignPermissionToTheResource(userID, resourceID);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const fetchRoles = async (req, res, next) => {
   try {
     const response = await roleService.fetchUserRoles();
@@ -119,4 +150,7 @@ module.exports = {
   assignPermissionToRole,
   assignPermissionToUser,
   fetchRoles,
+  createResources,
+  getResources,
+  assignPermissionToResource,
 };

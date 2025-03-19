@@ -33,7 +33,7 @@ const UserPermissionSchema = new mongoose.Schema({
   userID: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   permissionID: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    required: false,
     ref: "Permission",
   },
   resourceID: {

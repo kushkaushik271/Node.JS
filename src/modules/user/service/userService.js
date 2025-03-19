@@ -9,7 +9,7 @@ const registerUser = async (username, email, password) => {
   const existingUser = await tempUser.findOne({ email });
   const presentUser = await User.findOne({ email });
 
-  if(presentUser) {
+  if (presentUser) {
     throw new Error("User already registred.");
   }
 

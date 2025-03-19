@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
-const { UserRole, RolePermission, UserPermission } = require("../src/modules/roles/model/roles");
+const {
+  UserRole,
+  RolePermission,
+  UserPermission,
+  Resource,
+} = require("../src/modules/roles/model/roles");
 const { STATUS_CODES, MESSAGES } = require("../src/constants/constant");
 require("dotenv").config();
 
@@ -34,12 +39,34 @@ const verifyRefreshToken = (req, res, next) => {
   }
 };
 
-const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
+const checkAccess = (allowedRoles = [], allowedPermissions = [], allowedResources = []) => {
   return async (req, res, next) => {
     try {
       let hasRoleAccess = false;
       let hasRolePermissionAccess = false;
       let hasUserPermissionAccess = false;
+
+      let resourceIDs = [];
+
+      // Fetch resource IDs only if allowedResources is provided
+      if (allowedResources.length > 0) {
+        const resources = await Resource.find({ resourceName: { $in: allowedResources } });
+        resourceIDs = resources.map((res) => res._id.toString());
+
+        const userPermissionResources = await UserPermission.find({
+          userID: req.user.userId,
+          resourceID: { $in: resourceIDs },
+        }).populate("permissionID");
+
+        const hasResourceAccess = userPermissionResources.length > 0;
+
+        if (!hasResourceAccess) {
+          return res.status(STATUS_CODES.FORBIDDEN).json({
+            message: "Access Denied: You don't have permission to access this resource.",
+          });
+        }
+        next();
+      }
 
       const userRole = await UserRole.findOne({
         userID: req.user.userId,
@@ -55,7 +82,7 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
       );
 
       if (!hasUserPermissionAccess && userPermissionDocs?.length > 0) {
-        return res.status(403).json({
+        return res.status(STATUS_CODES.FORBIDDEN).json({
           message: "You don't have user permission to do that. Please contact the admin.",
         });
       }
@@ -74,7 +101,7 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
         rolePermissionDocs = await RolePermission.find({
           roleID: userRole.roleID._id,
         }).populate("permissionID");
-        const rolePermissions = rolePermissionDocs.map((rp) => rp.permissionID.permissionName);
+        const rolePermissions = rolePermissionDocs.map((rp) => rp?.permissionID?.permissionName);
         hasRolePermissionAccess = allowedPermissions.some((permission) =>
           rolePermissions.includes(permission),
         );

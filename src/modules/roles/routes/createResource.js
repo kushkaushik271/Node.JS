@@ -1,13 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controller/userController");
+const roleController = require("../controller/roleController");
 const { verifyToken, checkAccess } = require("../../../../authentication/userAuth");
 
-router.get(
-  "/users",
-  verifyToken,
-  checkAccess(["ADMIN"], [], ["trainning"]),
-  userController.getAllUsers,
-);
+router.post("/resources", verifyToken, checkAccess(["ADMIN"], []), roleController.createResources);
 
 module.exports = router;

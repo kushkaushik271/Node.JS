@@ -1,5 +1,12 @@
 const User = require("../../user/model/userModel");
-const { Role, UserRole, Permission, RolePermission, UserPermission } = require("../model/roles");
+const {
+  Role,
+  UserRole,
+  Permission,
+  RolePermission,
+  UserPermission,
+  Resource,
+} = require("../model/roles");
 
 const registerRole = async (userRole, description) => {
   const existingRole = await Role.findOne({ userRole });
@@ -65,10 +72,28 @@ const createPermission = async (permissionName, desc) => {
   return { message: "Permission saved Successfully", newPermission };
 };
 
+const addResource = async (resourceName, description) => {
+  const resourceExist = await Resource.findOne({ resourceName });
+  if (resourceExist) {
+    throw new Error("Resource already exists");
+  }
+
+  const newPermission = new Resource({ resourceName, description });
+  await newPermission.save();
+
+  return { message: "Resource saved Successfully", newPermission };
+};
+
 const getRolePermission = async () => {
   const getPermission = await Permission.find();
 
   return { message: "Permission fetched Successfully", getPermission };
+};
+
+const fetchResources = async () => {
+  const getResources = await Resource.find();
+
+  return { message: "Resources fetched Successfully", getResources };
 };
 
 const fetchUserRoles = async () => {
@@ -134,6 +159,27 @@ const assignPermissionToTheUser = async (userId, permissionID) => {
   };
 };
 
+const assignPermissionToTheResource = async (userID, resourceID) => {
+  try {
+    // Check if the permission is already assigned to the user for the resource
+    const existingPermission = await UserPermission.findOne({
+      userID,
+      resourceID,
+    });
+
+    if (existingPermission) {
+      throw new Error("Permission already assigned to this resource for the user");
+    }
+
+    const userPermission = new UserPermission({ userID, resourceID });
+    await userPermission.save();
+
+    return { message: "Permission assigned successfully", userPermission };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 module.exports = {
   registerRole,
   getRole,
@@ -144,4 +190,7 @@ module.exports = {
   assignPermissionToRole,
   assignPermissionToTheUser,
   fetchUserRoles,
+  addResource,
+  fetchResources,
+  assignPermissionToTheResource,
 };
