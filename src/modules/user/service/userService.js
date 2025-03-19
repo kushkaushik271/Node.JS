@@ -7,8 +7,14 @@ require("dotenv").config();
 
 const registerUser = async (username, email, password) => {
   const existingUser = await tempUser.findOne({ email });
+  const presentUser = await User.findOne({ email });
+
+  if(presentUser) {
+    throw new Error("User already registred.");
+  }
+
   if (existingUser) {
-    throw new Error("User already exists with this email.");
+    throw new Error("Verification email already sent for this user");
   }
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
