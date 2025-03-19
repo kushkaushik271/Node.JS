@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
 const { UserRole, RolePermission, UserPermission } = require("../src/modules/roles/model/roles");
+const { STATUS_CODES, MESSAGES } = require("../src/constants/constant");
 require("dotenv").config();
 
 const verifyToken = (req, res, next) => {
   const token = req.header("Authorization");
   if (!token) {
-    return res.status(401).json({ message: "Access denied. No token provided." });
+    return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: MESSAGES.NO_TOKEN });
   }
   try {
     const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
@@ -15,21 +16,21 @@ const verifyToken = (req, res, next) => {
     /* eslint-disable no-unused-vars */
     err
   ) {
-    res.status(400).json({ message: "Invalid token." });
+    res.status(STATUS_CODES.BAD_REQUEST).json({ message: MESSAGES.UNAUTHORIZED_INVALID_TOKEN });
   }
 };
 
 const verifyRefreshToken = (req, res, next) => {
   const refreshToken = req.body.refreshToken;
   if (!refreshToken) {
-    return res.status(401).json({ message: "Refresh token is required." });
+    return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: MESSAGES.NO_TOKEN });
   }
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(400).json({ message: "Invalid refresh token." });
+    res.status(STATUS_CODES.BAD_REQUEST).json({ message: MESSAGES.INVALID_REFRESH_TOKEN });
   }
 };
 
@@ -80,7 +81,7 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
       }
 
       if (!hasRolePermissionAccess && rolePermissionDocs?.length > 0) {
-        return res.status(403).json({
+        return res.status(STATUS_CODES.FORBIDDEN).json({
           message: "You don't have role permission to do that. Please contact the admin.",
         });
       }
@@ -89,20 +90,14 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
         return next();
       }
 
-      return res.status(403).json({ message: "Access Denied: You don't have a valid Role." });
+      return res
+        .status(STATUS_CODES.FORBIDDEN)
+        .json({ message: "Access Denied: You don't have a valid Role." });
     } catch (error) {
       next(error);
-      res.status(500).json({ message: "Internal Server Error" });
+      res.status(STATUS_CODES.FORBIDDEN).json({ message: MESSAGES.INTERNAL_SERVER_ERROR });
     }
   };
 };
 
 module.exports = { verifyToken, verifyRefreshToken, checkAccess };
-
-// resourece means a portion of access. like specific actions.
-// redis.
-
-// access-control-package // [read]
-
-// need to hide access-token in headers. ------------ > DONE
-// refresh token should be in cookies. ---------------> DONE

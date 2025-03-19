@@ -2,13 +2,16 @@ const userService = require("../service/userService");
 const redisClient = require("../../../lib/redisClient");
 const bcrypt = require("bcrypt");
 const { validatePassword } = require("../../../lib/validations");
+const { STATUS_CODES } = require("../../../constants/constant");
 require("dotenv").config();
 
 const registerUser = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     const newUser = await userService.registerUser(username, email, password);
-    res.status(201).json({ message: "User registered successfully!", user: newUser });
+    res
+      .status(STATUS_CODES.CREATED)
+      .json({ message: "User registered successfully!", user: newUser });
   } catch (error) {
     next(error);
   }
@@ -28,7 +31,7 @@ const loginUser = async (req, res, next) => {
 
     res.setHeader("Authorization", `Bearer ${token}`);
     res.cookie("refreshToken", refreshToken);
-    res.status(200).json({ message: "User login successfully!" });
+    res.status(STATUS_CODES.SUCCESS).json({ message: "User login successfully!" });
   } catch (error) {
     next(error);
   }
@@ -38,7 +41,7 @@ const resetPassowrd = async (req, res, next) => {
   try {
     const { email } = req.body;
     const response = await userService.requestPasswordReset(email);
-    res.status(200).json(response);
+    res.status(STATUS_CODES.SUCCESS).json(response);
   } catch (error) {
     next(error);
   }
@@ -49,10 +52,10 @@ const changePassword = async (req, res, next) => {
     const { token } = req.params;
 
     if (!req.user || !req.user.userId) {
-      return res.status(400).json({ message: "Invalid user session." });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Invalid user session." });
     }
     const { newPassword } = req.body;
-    validatePassword(newPassword)
+    validatePassword(newPassword);
     let userDetails = await redisClient.get(`user:${req.user.userId}`);
 
     const salt = await bcrypt.genSalt(10);
@@ -65,14 +68,16 @@ const changePassword = async (req, res, next) => {
       });
 
       if (!updateData) {
-        return res.status(404).json({ message: "User not found or could not be updated." });
+        return res
+          .status(STATUS_CODES.NOT_FOUND)
+          .json({ message: "User not found or could not be updated." });
       }
-      return res.status(200).json({ message: "Password updated successfully." });
+      return res.status(STATUS_CODES.SUCCESS).json({ message: "Password updated successfully." });
     }
 
     const response = await userService.requestPasswordChange(token, hashedPassword);
     await redisClient.del(`user:${req.user.userId}`);
-    res.status(200).json(response);
+    res.status(STATUS_CODES.SUCCESS).json(response);
   } catch (error) {
     next(error);
   }
@@ -82,7 +87,7 @@ const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const response = await userService.deleteUserData(userId);
-    res.status(200).json(response);
+    res.status(STATUS_CODES.SUCCESS).json(response);
   } catch (error) {
     next(error);
   }
@@ -93,7 +98,7 @@ const refreshToken = async (req, res, next) => {
 
   try {
     const newAccessToken = await userService.refreshAccessToken(refreshToken);
-    res.status(200).json({ accessToken: newAccessToken });
+    res.status(STATUS_CODES.SUCCESS).json({ accessToken: newAccessToken });
   } catch (error) {
     next(error);
   }
@@ -102,7 +107,7 @@ const refreshToken = async (req, res, next) => {
 const getAllUsers = async (req, res, next) => {
   try {
     const users = await userService.getAllUsers();
-    res.status(200).json(users);
+    res.status(STATUS_CODES.SUCCESS).json(users);
   } catch (error) {
     next(error);
   }
@@ -112,7 +117,7 @@ const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.query;
     const users = await userService.emailVerify(token);
-    res.status(200).json(users);
+    res.status(STATUS_CODES.SUCCESS).json(users);
   } catch (error) {
     next(error);
   }
@@ -124,7 +129,7 @@ const logoutUser = async (req, res, next) => {
     const userExists = await redisClient.exists(`user:'${userId}'`);
 
     if (!userExists) {
-      return res.status(400).json({ message: "User already logged out" });
+      return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "User already logged out" });
     }
 
     await redisClient.del(`user:${userId}`);
@@ -136,7 +141,7 @@ const logoutUser = async (req, res, next) => {
       path: "/",
     });
 
-    res.status(200).json({ message: "Logout successful" });
+    res.status(STATUS_CODES.SUCCESS).json({ message: "Logout successful" });
   } catch (error) {
     next(error);
   }
