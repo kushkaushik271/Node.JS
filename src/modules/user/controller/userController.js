@@ -1,11 +1,14 @@
-const userService = require('../service/userService');
-require('dotenv').config()
+const userService = require("../service/userService");
+const redisClient = require("../../../lib/redisClient");
+const bcrypt = require("bcrypt");
+const { validatePassword } = require("../../../lib/validations");
+require("dotenv").config();
 
 const registerUser = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     const newUser = await userService.registerUser(username, email, password);
-    res.status(201).json({ message: 'User registered successfully!', user: newUser });
+    res.status(201).json({ message: "User registered successfully!", user: newUser });
   } catch (error) {
     next(error);
   }
@@ -14,10 +17,18 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const { token, refreshToken } = await userService.loginUser(email, password);
-    res.setHeader('Authorization', `Bearer ${token}`);
-    res.cookie('refreshToken', refreshToken);
-    res.status(200).json({ message: 'User login successfully!'});
+    const { token, refreshToken, userId } = await userService.loginUser(email, password);
+
+    await redisClient.set(
+      `user:${userId}`,
+      JSON.stringify({ userId, useremail: email }),
+      "EX",
+      7200,
+    );
+
+    res.setHeader("Authorization", `Bearer ${token}`);
+    res.cookie("refreshToken", refreshToken);
+    res.status(200).json({ message: "User login successfully!" });
   } catch (error) {
     next(error);
   }
@@ -36,8 +47,31 @@ const resetPassowrd = async (req, res, next) => {
 const changePassword = async (req, res, next) => {
   try {
     const { token } = req.params;
+
+    if (!req.user || !req.user.userId) {
+      return res.status(400).json({ message: "Invalid user session." });
+    }
     const { newPassword } = req.body;
-    const response = await userService.requestPasswordChange(token, newPassword);
+    validatePassword(newPassword)
+    let userDetails = await redisClient.get(`user:${req.user.userId}`);
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    if (userDetails) {
+      userDetails = JSON.parse(userDetails);
+      const updateData = await userService.updateById(userDetails?.userId, {
+        passwordHash: hashedPassword,
+      });
+
+      if (!updateData) {
+        return res.status(404).json({ message: "User not found or could not be updated." });
+      }
+      return res.status(200).json({ message: "Password updated successfully." });
+    }
+
+    const response = await userService.requestPasswordChange(token, hashedPassword);
+    await redisClient.del(`user:${req.user.userId}`);
     res.status(200).json(response);
   } catch (error) {
     next(error);
@@ -84,6 +118,30 @@ const verifyEmail = async (req, res, next) => {
   }
 };
 
+const logoutUser = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const userExists = await redisClient.exists(`user:'${userId}'`);
+
+    if (!userExists) {
+      return res.status(400).json({ message: "User already logged out" });
+    }
+
+    await redisClient.del(`user:${userId}`);
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      path: "/",
+    });
+
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -93,4 +151,5 @@ module.exports = {
   refreshToken,
   getAllUsers,
   verifyEmail,
+  logoutUser,
 };

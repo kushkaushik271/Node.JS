@@ -1,10 +1,10 @@
-const User = require('../model/userModel');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { sendResetPasswordEmail, sendVerificationEmail } = require('../../../services/emailService');
-const { validateEmail, validatePassword } = require('../../../lib/validations');
-const tempUser = require('../model/tempUserSchema');
-require('dotenv').config();
+const User = require("../model/userModel");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { sendResetPasswordEmail, sendVerificationEmail } = require("../../../services/emailService");
+const { validateEmail, validatePassword } = require("../../../lib/validations");
+const tempUser = require("../model/tempUserSchema");
+require("dotenv").config();
 
 const registerUser = async (username, email, password) => {
   validateEmail(email);
@@ -12,7 +12,7 @@ const registerUser = async (username, email, password) => {
 
   const existingUser = await tempUser.findOne({ email });
   if (existingUser) {
-    throw new Error('User already exists with this email.');
+    throw new Error("User already exists with this email.");
   }
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
@@ -26,13 +26,13 @@ const registerUser = async (username, email, password) => {
   await newUser.save();
 
   const verificationToken = jwt.sign({ email, userId: newUser._id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: "1h",
   });
 
   await sendVerificationEmail(email, verificationToken);
 
   return {
-    message: 'Registration successful! Please check your email to verify your account.',
+    message: "Registration successful! Please check your email to verify your account.",
     verificationToken,
   };
 };
@@ -42,7 +42,7 @@ const emailVerify = async (token) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const temperoryUser = await tempUser.findOne({ email: decoded.email });
     if (!temperoryUser) {
-      return res.status(400).json({ message: 'Invalid or expired token.' });
+      return res.status(400).json({ message: "Invalid or expired token." });
     }
 
     const newUser = new User({
@@ -55,7 +55,7 @@ const emailVerify = async (token) => {
 
     await tempUser.deleteOne({ email: decoded.email });
 
-    return { message: 'Email verified successfully! You can now log in.' };
+    return { message: "Email verified successfully! You can now log in." };
   } catch (error) {
     throw new Error(error);
   }
@@ -66,12 +66,12 @@ const loginUser = async (email, password) => {
   validatePassword(password);
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error('Invalid email or password.');
+    throw new Error("Invalid email or password.");
   }
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
-    throw new Error('Invalid email or password.');
+    throw new Error("Invalid email or password.");
   }
 
   const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
@@ -82,50 +82,48 @@ const loginUser = async (email, password) => {
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN },
   );
-  return { token, refreshToken };
+  return { token, refreshToken, userId: user._id };
 };
 
 const requestPasswordReset = async (email) => {
   validateEmail(email);
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error('User with this email does not exist.');
+    throw new Error("User with this email does not exist.");
   }
 
   const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: "1h",
   });
 
   await sendResetPasswordEmail(email, resetToken);
 
-  return { message: 'Password reset link sent to email.' };
+  return { message: "Password reset link sent to email." };
 };
 
 const requestPasswordChange = async (token, newPassword) => {
   try {
-    validatePassword(newPassword);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error('User not found.');
+      throw new Error("User not found.");
     }
 
-    const salt = await bcrypt.genSalt(10);
-    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    user.passwordHash = newPassword;
 
     await user.save();
-    return { message: 'Password reset successful. You can now log in.' };
-  } catch (error) {
-    throw new Error('Invalid or expired token.');
+    return { message: "Password reset successful. You can now log in." };
+  } catch (/* eslint-disable no-unused-vars */ error) {
+    throw new Error("Invalid or expired token.");
   }
 };
 
 const deleteUserData = async (userId) => {
   try {
     await User.findByIdAndDelete(userId);
-    return { message: 'User Deleted Successfully' };
+    return { message: "User Deleted Successfully" };
   } catch (error) {
     throw new Error(error);
   }
@@ -136,7 +134,7 @@ const refreshAccessToken = async (refreshToken) => {
 
   const user = await User.findById(decoded.userId);
   if (!user) {
-    throw new Error('Invalid refresh token.');
+    throw new Error("Invalid refresh token.");
   }
 
   const newAccessToken = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
@@ -148,10 +146,22 @@ const refreshAccessToken = async (refreshToken) => {
 
 const getAllUsers = async () => {
   try {
-    const users = await User.find({}, '_id username email');
+    const users = await User.find({}, "_id username email");
     return users;
   } catch (error) {
-    throw new Error('Error fetching users.');
+    throw new Error("Error fetching users.");
+  }
+};
+
+const updateById = async (id, payload) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(id, payload, { new: true });
+    if (!updatedUser) {
+      throw new Error("User not found.");
+    }
+    return true;
+  } catch (error) {
+    throw new Error(error);
   }
 };
 
@@ -164,4 +174,5 @@ module.exports = {
   refreshAccessToken,
   getAllUsers,
   emailVerify,
+  updateById,
 };

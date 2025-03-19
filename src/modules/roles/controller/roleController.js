@@ -1,10 +1,10 @@
-const roleService = require('../services/roleService');
+const roleService = require("../services/roleService");
 
 const registerRole = async (req, res, next) => {
   try {
     const { roleName, description } = req.body;
     const newRole = await roleService.registerRole(roleName, description);
-    res.status(201).json({ message: 'Role Created successfully!', role: newRole });
+    res.status(201).json({ message: "Role Created successfully!", role: newRole });
   } catch (error) {
     next(error);
   }
@@ -25,7 +25,7 @@ const assignRoleToUser = async (req, res, next) => {
     const { roleID } = req.body;
 
     if (!roleID) {
-      return res.status(400).json({ message: 'roleID is required' });
+      return res.status(400).json({ message: "roleID is required" });
     }
 
     const response = await roleService.assignRoleToUser(userID, roleID);
@@ -74,7 +74,7 @@ const assignPermissionToRole = async (req, res, next) => {
     const { permissionId, resourceId } = req.body;
 
     if (!permissionId) {
-      return res.status(400).json({ message: 'Permission ID is required' });
+      return res.status(400).json({ message: "Permission ID is required" });
     }
 
     const response = await roleService.assignPermissionToRole(roleId, permissionId, resourceId);
@@ -89,7 +89,7 @@ const assignPermissionToUser = async (req, res) => {
     const { permissionID, userID } = req.body;
 
     if (!permissionID) {
-      return res.status(400).json({ message: 'permissionID is required' });
+      return res.status(400).json({ message: "permissionID is required" });
     }
 
     const response = await roleService.assignPermissionToTheUser(userID, permissionID);

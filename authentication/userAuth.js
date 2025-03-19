@@ -1,32 +1,35 @@
-const jwt = require('jsonwebtoken');
-const { UserRole, RolePermission, UserPermission } = require('../src/modules/roles/model/roles');
-require('dotenv').config();
+const jwt = require("jsonwebtoken");
+const { UserRole, RolePermission, UserPermission } = require("../src/modules/roles/model/roles");
+require("dotenv").config();
 
 const verifyToken = (req, res, next) => {
-  const token = req.header('Authorization');
+  const token = req.header("Authorization");
   if (!token) {
-    return res.status(401).json({ message: 'Access denied. No token provided.' });
+    return res.status(401).json({ message: "Access denied. No token provided." });
   }
   try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
+    const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
-    res.status(400).json({ message: 'Invalid token.' });
+  } catch (
+    /* eslint-disable no-unused-vars */
+    err
+  ) {
+    res.status(400).json({ message: "Invalid token." });
   }
 };
 
 const verifyRefreshToken = (req, res, next) => {
   const refreshToken = req.body.refreshToken;
   if (!refreshToken) {
-    return res.status(401).json({ message: 'Refresh token is required.' });
+    return res.status(401).json({ message: "Refresh token is required." });
   }
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(400).json({ message: 'Invalid refresh token.' });
+    res.status(400).json({ message: "Invalid refresh token." });
   }
 };
 
@@ -39,11 +42,11 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
 
       const userRole = await UserRole.findOne({
         userID: req.user.userId,
-      }).populate('roleID');
+      }).populate("roleID");
 
       const userPermissionDocs = await UserPermission.find({
         userID: req.user.userId,
-      }).populate('permissionID');
+      }).populate("permissionID");
 
       const userPermissions = userPermissionDocs.map((up) => up.permissionID.permissionName);
       hasUserPermissionAccess = allowedPermissions.some((permission) =>
@@ -69,7 +72,7 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
       if (allowedPermissions.length > 0 && userRole) {
         rolePermissionDocs = await RolePermission.find({
           roleID: userRole.roleID._id,
-        }).populate('permissionID');
+        }).populate("permissionID");
         const rolePermissions = rolePermissionDocs.map((rp) => rp.permissionID.permissionName);
         hasRolePermissionAccess = allowedPermissions.some((permission) =>
           rolePermissions.includes(permission),
@@ -83,16 +86,23 @@ const checkAccess = (allowedRoles = [], allowedPermissions = []) => {
       }
 
       if (hasRoleAccess) {
-        return next()
+        return next();
       }
 
       return res.status(403).json({ message: "Access Denied: You don't have a valid Role." });
     } catch (error) {
-      console.error(error);
       next(error);
-      res.status(500).json({ message: 'Internal Server Error' });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   };
 };
 
 module.exports = { verifyToken, verifyRefreshToken, checkAccess };
+
+// resourece means a portion of access. like specific actions.
+// redis.
+
+// access-control-package // [read]
+
+// need to hide access-token in headers. ------------ > DONE
+// refresh token should be in cookies. ---------------> DONE

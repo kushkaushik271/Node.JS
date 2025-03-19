@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userRoleController = require('../controller/roleController');
-const { verifyToken, checkAccess } = require('../../../../authentication/userAuth');
+const userRoleController = require("../controller/roleController");
+const { verifyToken, checkAccess } = require("../../../../authentication/userAuth");
 
 router.delete(
-  '/users/:userId/roles/:roleId',
+  "/users/:userId/roles/:roleId",
   verifyToken,
-  checkAccess(['ADMIN', []]),
+  checkAccess(["ADMIN", []]),
   userRoleController.removeRoleFromUser,
 );
 

@@ -1,14 +1,14 @@
-const validator = require('validator');
+const validator = require("validator");
 
 const validateEmail = (email) => {
   if (!validator.isEmail(email)) {
-    throw new Error('Invalid email format.');
+    throw new Error("Invalid email format.");
   }
 };
 
 const validatePassword = (password) => {
   if (!password || password.length < 8) {
-    throw new Error('Password must be at least 8 characters long.');
+    throw new Error("Password must be at least 8 characters long.");
   }
 
   if (
@@ -20,7 +20,7 @@ const validatePassword = (password) => {
     })
   ) {
     throw new Error(
-      'Password must contain at least one uppercase letter, one number, and one special character.',
+      "Password must contain at least one uppercase letter, one number, and one special character.",
     );
   }
 };

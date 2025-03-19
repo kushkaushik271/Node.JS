@@ -1,10 +1,10 @@
-const User = require('../../user/model/userModel');
-const { Role, UserRole, Permission, RolePermission, UserPermission } = require('../model/roles');
+const User = require("../../user/model/userModel");
+const { Role, UserRole, Permission, RolePermission, UserPermission } = require("../model/roles");
 
 const registerRole = async (userRole, description) => {
   const existingRole = await Role.findOne({ userRole });
   if (existingRole) {
-    throw new Error('Role already exists');
+    throw new Error("Role already exists");
   }
 
   const newRole = new Role({
@@ -28,53 +28,53 @@ const removeRoleFromUser = async (userId, roleId) => {
   });
 
   if (!existingAssignment) {
-    throw new Error('Role assignment not found for this user');
+    throw new Error("Role assignment not found for this user");
   }
 
   await UserRole.deleteOne({ userID: userId, roleID: roleId });
 
-  return { message: 'Role removed from user successfully!' };
+  return { message: "Role removed from user successfully!" };
 };
 
 const assignRoleToUser = async (userID, roleID) => {
   const roleExists = await Role.findById(roleID);
   if (!roleExists) {
-    throw new Error('Role not found');
+    throw new Error("Role not found");
   }
 
   const existingAssignment = await UserRole.findOne({ userID, roleID });
   if (existingAssignment) {
-    throw new Error('User already has this role assigned');
+    throw new Error("User already has this role assigned");
   }
 
   const newUserRole = new UserRole({ userID, roleID });
   await newUserRole.save();
 
-  return { message: 'Role assigned to user successfully!', newUserRole };
+  return { message: "Role assigned to user successfully!", newUserRole };
 };
 
 const createPermission = async (permissionName, desc) => {
   const permissionExist = await Permission.findOne({ permissionName });
   if (permissionExist) {
-    throw new Error('Permission already exists');
+    throw new Error("Permission already exists");
   }
 
   const newPermission = new Permission({ permissionName, desc });
   await newPermission.save();
 
-  return { message: 'Permission saved Successfully', newPermission };
+  return { message: "Permission saved Successfully", newPermission };
 };
 
 const getRolePermission = async () => {
   const getPermission = await Permission.find();
 
-  return { message: 'Permission fetched Successfully', getPermission };
+  return { message: "Permission fetched Successfully", getPermission };
 };
 
 const fetchUserRoles = async () => {
-  const getPermission = await UserPermission.find().populate('userID').populate('permissionID');
+  const getPermission = await UserPermission.find().populate("userID").populate("permissionID");
 
-  return { message: 'User Permission fetched Successfully', getPermission };
+  return { message: "User Permission fetched Successfully", getPermission };
 };
 
 const assignPermissionToRole = async (roleId, permissionId, resourceId) => {
@@ -85,7 +85,7 @@ const assignPermissionToRole = async (roleId, permissionId, resourceId) => {
   });
 
   if (existingAssignment) {
-    throw new Error('Permission already assigned to this role');
+    throw new Error("Permission already assigned to this role");
   }
 
   // Create a new role-permission entry
@@ -98,7 +98,7 @@ const assignPermissionToRole = async (roleId, permissionId, resourceId) => {
   await newRolePermission.save();
 
   return {
-    message: 'Permission assigned to role successfully!',
+    message: "Permission assigned to role successfully!",
     newRolePermission,
   };
 };
@@ -106,12 +106,12 @@ const assignPermissionToRole = async (roleId, permissionId, resourceId) => {
 const assignPermissionToTheUser = async (userId, permissionID) => {
   const userExists = await User.findById(userId);
   if (!userExists) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   const permissionExists = await Permission.findById(permissionID);
   if (!permissionExists) {
-    throw new Error('Permission not found');
+    throw new Error("Permission not found");
   }
 
   const existingAssignment = await UserPermission.findOne({
@@ -119,7 +119,7 @@ const assignPermissionToTheUser = async (userId, permissionID) => {
     permissionID,
   });
   if (existingAssignment) {
-    throw new Error('User already has this permission assigned');
+    throw new Error("User already has this permission assigned");
   }
 
   const newUserPermission = new UserPermission({
@@ -129,7 +129,7 @@ const assignPermissionToTheUser = async (userId, permissionID) => {
   await newUserPermission.save();
 
   return {
-    message: 'Permission assigned to user successfully!',
+    message: "Permission assigned to user successfully!",
     newUserPermission,
   };
 };

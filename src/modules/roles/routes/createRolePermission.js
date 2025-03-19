@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const roleController = require('../controller/roleController');
-const { verifyToken, checkAccess } = require('../../../../authentication/userAuth');
+const roleController = require("../controller/roleController");
+const { verifyToken, checkAccess } = require("../../../../authentication/userAuth");
 
 router.post(
-  '/:roleId/permissions',
+  "/:roleId/permissions",
   verifyToken,
-  checkAccess(['ADMIN', []]),
+  checkAccess(["ADMIN", []]),
   roleController.assignPermissionToRole,
 );
 
