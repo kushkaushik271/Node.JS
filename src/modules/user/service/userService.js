@@ -28,7 +28,7 @@ const registerUser = async (username, email, password) => {
   await sendVerificationEmail(email, verificationToken);
 
   return {
-    message: "Registration successful! Please check your email to verify your account.",
+    message: "Please check your email to verify your account.",
     verificationToken,
   };
 };
