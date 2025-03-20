@@ -1,10 +1,5 @@
 const jwt = require("jsonwebtoken");
-const {
-  UserRole,
-  RolePermission,
-  UserPermission,
-  Resource,
-} = require("../src/modules/roles/model/roles");
+const { UserRole, RolePermission, UserPermission } = require("../src/modules/roles/model/roles");
 const { STATUS_CODES, MESSAGES } = require("../src/constants/constant");
 require("dotenv").config();
 
@@ -45,84 +40,78 @@ const checkAccess = (allowedRoles = [], allowedPermissions = [], allowedResource
       let hasRoleAccess = false;
       let hasRolePermissionAccess = false;
       let hasUserPermissionAccess = false;
+      let hasResourceAccess = false;
 
-      let resourceIDs = [];
+      const userRole = await UserRole.findOne({ userID: req.user.userId }).populate("roleID");
 
-      // Fetch resource IDs only if allowedResources is provided
-      if (allowedResources.length > 0) {
-        const resources = await Resource.find({ resourceName: { $in: allowedResources } });
-        resourceIDs = resources.map((res) => res._id.toString());
-
-        const userPermissionResources = await UserPermission.find({
-          userID: req.user.userId,
-          resourceID: { $in: resourceIDs },
-        }).populate("permissionID");
-
-        const hasResourceAccess = userPermissionResources.length > 0;
-
-        if (!hasResourceAccess) {
-          return res.status(STATUS_CODES.FORBIDDEN).json({
-            message: "Access Denied: You don't have permission to access this resource.",
-          });
-        }
-        next();
-      }
-
-      const userRole = await UserRole.findOne({
-        userID: req.user.userId,
-      }).populate("roleID");
-
-      const userPermissionDocs = await UserPermission.find({
-        userID: req.user.userId,
-      }).populate("permissionID");
-
-      const userPermissions = userPermissionDocs.map((up) => up.permissionID.permissionName);
-      hasUserPermissionAccess = allowedPermissions.some((permission) =>
-        userPermissions.includes(permission),
+      const userPermissionDocs = await UserPermission.find({ userID: req.user.userId }).populate(
+        "permissionID resourceID",
       );
 
-      if (!hasUserPermissionAccess && userPermissionDocs?.length > 0) {
+      const userPermissions = userPermissionDocs.map((up) => up.permissionID?.permissionName);
+      const userResources = userPermissionDocs
+        .map((up) => up.resourceID?.resourceName)
+        .filter(Boolean);
+
+      // Check Role Access (Only if allowedRoles is provided)
+      if (userRole && allowedRoles.length > 0) {
+        hasRoleAccess = allowedRoles.includes(userRole.roleID.roleName);
+      }
+
+      // Check Direct User Permission Access (Only if allowedPermissions is provided)
+      if (allowedPermissions.length > 0) {
+        hasUserPermissionAccess = allowedPermissions.some((permission) =>
+          userPermissions.includes(permission),
+        );
+      }
+
+      // Check Direct User Resource Access (Only if allowedResources is provided)
+      if (allowedResources.length > 0) {
+        hasResourceAccess = allowedResources.some((resource) => userResources.includes(resource));
+      }
+
+      // If permissions are required but the user doesn't have any
+      if (allowedPermissions.length > 0 && !hasUserPermissionAccess) {
         return res.status(STATUS_CODES.FORBIDDEN).json({
-          message: "You don't have user permission to do that. Please contact the admin.",
+          message: "You don't have user permission to access this resource. Contact the admin.",
         });
       }
 
-      if (userRole && allowedRoles.length > 0) {
-        const userRoleName = userRole.roleID.roleName;
-        hasRoleAccess = allowedRoles.includes(userRoleName);
+      // If resources are required but the user doesn't have access
+      if (allowedResources.length > 0 && !hasResourceAccess) {
+        return res.status(STATUS_CODES.FORBIDDEN).json({
+          message: "You don't have access to the required resources. Contact the admin.",
+        });
       }
 
-      if (hasRoleAccess && hasUserPermissionAccess) {
-        return next();
-      }
-
-      let rolePermissionDocs;
+      // Role-Permission Check (Only if permissions are provided)
       if (allowedPermissions.length > 0 && userRole) {
-        rolePermissionDocs = await RolePermission.find({
+        const rolePermissionDocs = await RolePermission.find({
           roleID: userRole.roleID._id,
-        }).populate("permissionID");
-        const rolePermissions = rolePermissionDocs.map((rp) => rp?.permissionID?.permissionName);
+        }).populate("permissionID resourceID");
+        const rolePermissions = rolePermissionDocs.map((rp) => rp.permissionID?.permissionName);
         hasRolePermissionAccess = allowedPermissions.some((permission) =>
           rolePermissions.includes(permission),
         );
       }
 
-      if (!hasRolePermissionAccess && rolePermissionDocs?.length > 0) {
+      // If role-based permissions are required but the user doesn't have them
+      if (allowedPermissions.length > 0 && !hasRolePermissionAccess) {
         return res.status(STATUS_CODES.FORBIDDEN).json({
-          message: "You don't have role permission to do that. Please contact the admin.",
+          message: "You don't have role permission to access this resource. Contact the admin.",
         });
       }
 
-      if (hasRoleAccess) {
+      // Grant access if the user has a valid role OR user-specific permission OR resource access
+      if (hasRoleAccess || hasUserPermissionAccess || hasResourceAccess) {
         return next();
       }
 
-      return res
-        .status(STATUS_CODES.FORBIDDEN)
-        .json({ message: "Access Denied: You don't have a valid Role." });
+      return res.status(STATUS_CODES.FORBIDDEN).json({
+        message: "Access Denied: You don't have a valid role, permission, or resource access.",
+      });
     } catch (error) {
-      next(error);
-      res.status(STATUS_CODES.FORBIDDEN).json({ message: MESSAGES.INTERNAL_SERVER_ERROR });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   };
 };
