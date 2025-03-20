@@ -6,7 +6,7 @@ const { verifyToken, checkAccess } = require("../../../../authentication/userAut
 router.get(
   "/users",
   verifyToken,
-  checkAccess(["USER"], [], ["trainning"]),
+  checkAccess(["USER"], [], ["trainning"]), // role based resource auth.
   userController.getAllUsers,
 );
 
