@@ -3,7 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { sendResetPasswordEmail, sendVerificationEmail } = require("../../../services/emailService");
 const tempUser = require("../model/tempUserSchema");
+const sendMessageToQueue = require("../../../../producer");
 require("dotenv").config();
+// const sendMessageToQueue = require('../../../../producer')
 
 const registerUser = async (username, email, password) => {
   const existingUser = await tempUser.findOne({ email });
@@ -164,6 +166,25 @@ const updateById = async (id, payload) => {
   }
 };
 
+const sendMessageToUser = async (userId, email, content) => {
+  const messagePayload = {
+    userId, // whom i want to send this message
+    email, // sender email
+    content, // sender want to send this content to specifc user
+  };
+  sendMessageToQueue(messagePayload);
+};
+
+const sendGroupMessage = async (senderId, senderEmail, content) => {
+  const messagePayload = {
+    userId: senderId,
+    email: senderEmail,
+    content: content,
+  };
+
+  await sendMessageToQueue(messagePayload, "12345");
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -174,4 +195,6 @@ module.exports = {
   getAllUsers,
   emailVerify,
   updateById,
+  sendMessageToUser,
+  sendGroupMessage,
 };

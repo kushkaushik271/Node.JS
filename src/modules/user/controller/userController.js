@@ -145,6 +145,37 @@ const logoutUser = async (req, res, next) => {
   }
 };
 
+const sendMessageToUser = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { email } = req.user;
+    const { content } = req.body;
+    await userService.sendMessageToUser(user_id, email, content);
+    res.status(STATUS_CODES.SUCCESS).json({ message: "Message Sent to a user" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const sendGroupMessage = async (req, res) => {
+  try {
+    const { content } = req.body;
+    const senderId = req.user.userId;
+    const senderEmail = req.user.email;
+
+    if (!content) {
+      return res.status(400).json({ message: "Content is required" });
+    }
+
+    await userService.sendGroupMessage(senderId, senderEmail, content);
+
+    return res.json({ message: "Group message sent successfully!" });
+  } catch (error) {
+    console.error("Error sending group message:", error);
+    return res.status(500).json({ message: "Failed to send group message", error });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -155,4 +186,6 @@ module.exports = {
   getAllUsers,
   verifyEmail,
   logoutUser,
+  sendMessageToUser,
+  sendGroupMessage,
 };

@@ -14,8 +14,6 @@ dbConnection();
 /* eslint-disable */
 redisClient.on("error", (err) => console.error("Redis Client Error:", err)); // Initialize Redis connection in server.js
 redisClient.connect();
- 
-
 // swagger-doc
 app.use(swaggerRoutes); // swagger docs.
 

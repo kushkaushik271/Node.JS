@@ -7,8 +7,23 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - cache:/var/lib/data
+      - cache:/data  # Fixed the Redis data directory
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 5672:5672    # RabbitMQ main port
+      - 15672:15672  # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq  # Added missing volume
 
 volumes:
   cache:
+    driver: local
+  rabbitmq_data:  # Defined missing volume
     driver: local
