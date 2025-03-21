@@ -5,15 +5,13 @@ const config = require("./config/default");
 const errorHandler = require("./src/lib/error");
 const swaggerRoutes = require("./apiDoc/index");
 const roleRouter = require("./src/modules/roles/routes");
-const redisClient = require("./src/lib/redisClient");
 
 const app = express();
 app.use(express.json());
 dbConnection();
 
-/* eslint-disable */
-// redisClient.on("error", (err) => console.error("Redis Client Error:", err)); // Initialize Redis connection in server.js
-// redisClient.connect();
+redisClient.on("error", (err) => console.error("Redis Client Error:", err)); // Initialize Redis connection in server.js
+redisClient.connect();
 // swagger-doc
 app.use(swaggerRoutes); // swagger docs.
 

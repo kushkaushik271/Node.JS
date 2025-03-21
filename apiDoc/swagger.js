@@ -294,31 +294,29 @@
 
 /**
  * @swagger
-* /logout:
-*   post:
-*     summary: Logout user
-*     description: Logs out the currently authenticated user by invalidating their token.
-*     tags:
-*       - Users
-*     security:
-*       - BearerAuth: []
-*     parameters:
-*       - in: header
-*         name: Authorization
-*         required: true
-*         description: Bearer token for authentication
-*         schema:
-*           type: string
-*     responses:
-*       200:
-*         description: User successfully logged out.
-*       401:
-*         description: Unauthorized - Invalid or missing token.
-*       500:
-*         description: Internal Server Error - Error logging out user.
-*/
-
-
+ * /logout:
+ *   post:
+ *     summary: Logout user
+ *     description: Logs out the currently authenticated user by invalidating their token.
+ *     tags:
+ *       - Users
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         required: true
+ *         description: Bearer token for authentication
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User successfully logged out.
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *       500:
+ *         description: Internal Server Error - Error logging out user.
+ */
 
 /**
  * @swagger
@@ -363,10 +361,9 @@
  *                   example: "Invalid refresh token."
  */
 
-
 /**
  * @swagger
-* /:
+ * /:
  *   post:
  *     summary: Register a new role
  *     description: Creates a new role with the given role name and description.
@@ -394,11 +391,11 @@
  *         description: Bad request - Role already exists.
  *       500:
  *         description: Internal Server Error - Error creating role.
-*/
+ */
 
 /**
  * @swagger
-* /getAllRoles:
+ * /getAllRoles:
  *    get:
  *     summary: Get all roles
  *     description: Retrieves a list of all roles.
@@ -431,10 +428,9 @@
  *         description: Internal Server Error - Error fetching roles.
  */
 
-
 /**
  * @swagger
-* /{roleId}/permissions:
+ * /{roleId}/permissions:
  *   post:
  *     summary: Assign a permission to a role
  *     description: Assigns a specific permission to a role, optionally specifying a resource.
@@ -471,10 +467,9 @@
  *         description: Internal Server Error - Error assigning permission.
  */
 
-
 /**
  * @swagger
-* /permissions:
+ * /permissions:
  *   post:
  *     summary: Create a new permission
  *     description: Creates a new permission with a name and description.
@@ -545,58 +540,57 @@
  *         description: Internal Server Error - Error fetching permissions.
  */
 
-
 /**
  * @swagger
-* /{userID}/roles:
-*   post:
-*     summary: Assign a role to a user
-*     description: Assigns a specified role to a user.
-*     tags:
-*       - Permissions
-*     security:
-*       - BearerAuth: []
-*     parameters:
-*       - in: path
-*         name: userID
-*         required: true
-*         description: ID of the user to whom the role will be assigned.
-*         schema:
-*           type: string
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               roleID:
-*                 type: string
-*                 example: "60d0fe4f5311236168a109cc"
-*     responses:
-*       201:
-*         description: Role assigned to user successfully.
-*         content:
-*           application/json:
-*             schema:
-*               type: object
-*               properties:
-*                 message:
-*                   type: string
-*                   example: "Role assigned to user successfully!"
-*                 newUserRole:
-*                   type: object
-*                   properties:
-*                     userID:
-*                       type: string
-*                       example: "60d0fe4f5311236168a109ca"
-*                     roleID:
-*                       type: string
-*                       example: "60d0fe4f5311236168a109cc"
-*       400:
-*         description: Bad request - roleID is required or user already has this role.
-*       401:
-*         description: Unauthorized - Invalid or missing token.
-*       500:
-*         description: Internal Server Error - Error assigning role to user.
-*/
+ * /{userID}/roles:
+ *   post:
+ *     summary: Assign a role to a user
+ *     description: Assigns a specified role to a user.
+ *     tags:
+ *       - Permissions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         required: true
+ *         description: ID of the user to whom the role will be assigned.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roleID:
+ *                 type: string
+ *                 example: "60d0fe4f5311236168a109cc"
+ *     responses:
+ *       201:
+ *         description: Role assigned to user successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Role assigned to user successfully!"
+ *                 newUserRole:
+ *                   type: object
+ *                   properties:
+ *                     userID:
+ *                       type: string
+ *                       example: "60d0fe4f5311236168a109ca"
+ *                     roleID:
+ *                       type: string
+ *                       example: "60d0fe4f5311236168a109cc"
+ *       400:
+ *         description: Bad request - roleID is required or user already has this role.
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *       500:
+ *         description: Internal Server Error - Error assigning role to user.
+ */

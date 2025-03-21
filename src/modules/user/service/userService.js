@@ -168,6 +168,7 @@ const updateById = async (id, payload) => {
 
 const sendMessageToUser = async (userId, email, content) => {
   const messagePayload = {
+    id: new Date().getTime(),
     userId, // whom i want to send this message
     email, // sender email
     content, // sender want to send this content to specifc user
@@ -177,10 +178,11 @@ const sendMessageToUser = async (userId, email, content) => {
 
 const sendGroupMessage = async (senderId, senderEmail, content) => {
   const messagePayload = {
+    id: new Date().getTime(),
     userId: senderId,
     email: senderEmail,
     content: content,
-    groupId: "12345"
+    groupId: "12345",
   };
 
   await sendMessageToQueue(messagePayload);
@@ -190,12 +192,12 @@ const generateTokens = async (user) => {
   const accessToken = jwt.sign(
     { userId: user.userId, useremail: user.useremail, isActive: user.isActive },
     process.env.JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRATION }
+    { expiresIn: ACCESS_TOKEN_EXPIRATION },
   );
   const refreshToken = jwt.sign(
     { userId: user.userId, useremail: user.useremail, isActive: user.isActive },
     process.env.JWT_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRATION }
+    { expiresIn: REFRESH_TOKEN_EXPIRATION },
   );
 
   return { accessToken, refreshToken };
@@ -213,5 +215,5 @@ module.exports = {
   updateById,
   sendMessageToUser,
   sendGroupMessage,
-  generateTokens
+  generateTokens,
 };

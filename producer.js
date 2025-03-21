@@ -1,5 +1,5 @@
 const amqp = require("amqplib");
-require('dotenv').config()
+require("dotenv").config();
 
 async function sendMessageToQueue(messagePayload) {
   try {
@@ -10,10 +10,10 @@ async function sendMessageToQueue(messagePayload) {
 
     await channel.assertQueue(queue, { durable: true });
 
-    channel.sendToQueue(queue, Buffer.from(JSON.stringify(messageData)), {
+    channel.sendToQueue(queue, Buffer.from(JSON.stringify(messagePayload)), {
       persistent: true,
-      messageId: messageData.id.toString(),
-      headers: { userId: messageData.userId },
+      messageId: messagePayload.id.toString(),
+      headers: { userId: messagePayload.userId },
     });
 
     setTimeout(() => connection.close(), 500);
