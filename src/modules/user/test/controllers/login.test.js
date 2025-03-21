@@ -20,7 +20,7 @@ describe('User Login Controller', () => {
     console.log('34567890');
   });
   it('should return 200 with login successfull message', async () => {
-    // const tempUser = { identifier: 'Brij', password: 'Brij@123456' };
+
     const userDetails = {
       userId: '5403ffdb-1ee6-417b-89b5-7df99438c1e8',
       username: 'kushkaushik271',
