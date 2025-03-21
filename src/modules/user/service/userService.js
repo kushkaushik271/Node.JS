@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { sendResetPasswordEmail, sendVerificationEmail } = require("../../../services/emailService");
 const tempUser = require("../model/tempUserSchema");
 const sendMessageToQueue = require("../../../../producer");
+const { ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION } = require("../../../constants/constant");
 require("dotenv").config();
 // const sendMessageToQueue = require('../../../../producer')
 
@@ -30,7 +31,7 @@ const registerUser = async (username, email, password) => {
   await newUser.save();
 
   const verificationToken = jwt.sign({ email, userId: newUser._id }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
   });
 
   await sendVerificationEmail(email, verificationToken);
@@ -77,12 +78,12 @@ const loginUser = async (email, password) => {
   }
 
   const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
   });
   const refreshToken = jwt.sign(
     { userId: user._id, email: user.email },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN },
+    { expiresIn: REFRESH_TOKEN_EXPIRATION },
   );
   return { token, refreshToken, userId: user._id };
 };
@@ -94,7 +95,7 @@ const requestPasswordReset = async (email) => {
   }
 
   const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
   });
 
   await sendResetPasswordEmail(email, resetToken);
@@ -139,7 +140,7 @@ const refreshAccessToken = async (refreshToken) => {
   }
 
   const newAccessToken = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+    expiresIn: REFRESH_TOKEN_EXPIRATION,
   });
 
   return newAccessToken;
