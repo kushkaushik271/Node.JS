@@ -3,7 +3,7 @@ const router = express.Router();
 const userPermissionController = require("../controller/roleController");
 const { verifyToken, checkAccess } = require("../../../../authentication/userAuth");
 
-router.post(
+router.put(
   "/assignPermissiontoResource",
   verifyToken,
   checkAccess(["ADMIN"], []),

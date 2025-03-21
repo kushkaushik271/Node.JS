@@ -3,7 +3,7 @@ const router = express.Router();
 const userPermissionController = require("../controller/roleController");
 const { verifyToken, checkAccess } = require("../../../../authentication/userAuth");
 
-router.post(
+router.put(
   "/userpermissions",
   verifyToken,
   checkAccess(["ADMIN"], []),
