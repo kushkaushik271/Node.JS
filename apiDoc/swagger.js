@@ -294,6 +294,34 @@
 
 /**
  * @swagger
+* /logout:
+*   post:
+*     summary: Logout user
+*     description: Logs out the currently authenticated user by invalidating their token.
+*     tags:
+*       - Users
+*     security:
+*       - BearerAuth: []
+*     parameters:
+*       - in: header
+*         name: Authorization
+*         required: true
+*         description: Bearer token for authentication
+*         schema:
+*           type: string
+*     responses:
+*       200:
+*         description: User successfully logged out.
+*       401:
+*         description: Unauthorized - Invalid or missing token.
+*       500:
+*         description: Internal Server Error - Error logging out user.
+*/
+
+
+
+/**
+ * @swagger
  * /refresh-token:
  *   post:
  *     summary: Refresh access token
@@ -334,3 +362,241 @@
  *                   type: string
  *                   example: "Invalid refresh token."
  */
+
+
+/**
+ * @swagger
+* /:
+ *   post:
+ *     summary: Register a new role
+ *     description: Creates a new role with the given role name and description.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roleName:
+ *                 type: string
+ *                 example: "Admin"
+ *               description:
+ *                 type: string
+ *                 example: "Administrator role with full permissions"
+ *     responses:
+ *       201:
+ *         description: Role Created successfully!
+ *       400:
+ *         description: Bad request - Role already exists.
+ *       500:
+ *         description: Internal Server Error - Error creating role.
+*/
+
+/**
+ * @swagger
+* /getAllRoles:
+ *    get:
+ *     summary: Get all roles
+ *     description: Retrieves a list of all roles.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of roles.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     example: "60d0fe4f5311236168a109ca"
+ *                   roleName:
+ *                     type: string
+ *                     example: "Admin"
+ *                   description:
+ *                     type: string
+ *                     example: "Administrator role with full permissions"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *       500:
+ *         description: Internal Server Error - Error fetching roles.
+ */
+
+
+/**
+ * @swagger
+* /{roleId}/permissions:
+ *   post:
+ *     summary: Assign a permission to a role
+ *     description: Assigns a specific permission to a role, optionally specifying a resource.
+ *     tags:
+ *       - Roles
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roleId
+ *         required: true
+ *         description: The ID of the role to assign permission to.
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               permissionId:
+ *                 type: string
+ *                 example: "609d0fe4f5311236168a109cb"
+ *               resourceId:
+ *                 type: string
+ *                 example: "609d0fe4f5311236168a109cc"
+ *     responses:
+ *       201:
+ *         description: Permission assigned to role successfully.
+ *       400:
+ *         description: Bad request - Permission already assigned.
+ *       500:
+ *         description: Internal Server Error - Error assigning permission.
+ */
+
+
+/**
+ * @swagger
+* /permissions:
+ *   post:
+ *     summary: Create a new permission
+ *     description: Creates a new permission with a name and description.
+ *     tags:
+ *       - Permissions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               permissionName:
+ *                 type: string
+ *                 example: "EDIT_USER"
+ *               description:
+ *                 type: string
+ *                 example: "Allows editing user details"
+ *     responses:
+ *       201:
+ *         description: Permission saved successfully.
+ *       400:
+ *         description: Bad request - Permission already exists.
+ *       500:
+ *         description: Internal Server Error - Error creating permission.
+ */
+
+/**
+ * @swagger
+ * /permissions:
+ *   get:
+ *     summary: Get all permissions
+ *     description: Retrieves a list of all available permissions.
+ *     tags:
+ *       - Permissions
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of permissions.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Permission fetched Successfully"
+ *                 getPermission:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "60d0fe4f5311236168a109cb"
+ *                       permissionName:
+ *                         type: string
+ *                         example: "READ_ARTICLES"
+ *                       description:
+ *                         type: string
+ *                         example: "Allows reading of articles"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *       500:
+ *         description: Internal Server Error - Error fetching permissions.
+ */
+
+
+/**
+ * @swagger
+* /{userID}/roles:
+*   post:
+*     summary: Assign a role to a user
+*     description: Assigns a specified role to a user.
+*     tags:
+*       - Permissions
+*     security:
+*       - BearerAuth: []
+*     parameters:
+*       - in: path
+*         name: userID
+*         required: true
+*         description: ID of the user to whom the role will be assigned.
+*         schema:
+*           type: string
+*     requestBody:
+*       required: true
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               roleID:
+*                 type: string
+*                 example: "60d0fe4f5311236168a109cc"
+*     responses:
+*       201:
+*         description: Role assigned to user successfully.
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                   example: "Role assigned to user successfully!"
+*                 newUserRole:
+*                   type: object
+*                   properties:
+*                     userID:
+*                       type: string
+*                       example: "60d0fe4f5311236168a109ca"
+*                     roleID:
+*                       type: string
+*                       example: "60d0fe4f5311236168a109cc"
+*       400:
+*         description: Bad request - roleID is required or user already has this role.
+*       401:
+*         description: Unauthorized - Invalid or missing token.
+*       500:
+*         description: Internal Server Error - Error assigning role to user.
+*/

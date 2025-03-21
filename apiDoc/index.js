@@ -17,6 +17,9 @@ const swaggerOptions = {
       {
         url: `http://localhost:${config.PORT}/api/um/users`,
       },
+      {
+        url: `http://localhost:${config.PORT}/api/um/roles`,
+      },
     ],
     components: {
       securitySchemes: {
