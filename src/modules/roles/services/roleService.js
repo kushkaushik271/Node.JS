@@ -96,12 +96,6 @@ const fetchResources = async () => {
   return { message: "Resources fetched Successfully", getResources };
 };
 
-const fetchUserRoles = async () => {
-  const getPermission = await UserPermission.find().populate("userID").populate("permissionID");
-
-  return { message: "User Permission fetched Successfully", getPermission };
-};
-
 const assignPermissionToRole = async (roleId, permissionId, resourceId) => {
   const existingAssignment = await RolePermission.findOne({
     roleID: roleId,
@@ -189,7 +183,6 @@ module.exports = {
   getRolePermission,
   assignPermissionToRole,
   assignPermissionToTheUser,
-  fetchUserRoles,
   addResource,
   fetchResources,
   assignPermissionToTheResource,

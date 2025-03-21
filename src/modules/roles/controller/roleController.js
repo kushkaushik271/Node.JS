@@ -131,15 +131,6 @@ const assignPermissionToResource = async (req, res) => {
   }
 };
 
-const fetchRoles = async (req, res, next) => {
-  try {
-    const response = await roleService.fetchUserRoles();
-    res.status(STATUS_CODES.CREATED).json(response);
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   registerRole,
   getRole,
@@ -149,7 +140,6 @@ module.exports = {
   getPermission,
   assignPermissionToRole,
   assignPermissionToUser,
-  fetchRoles,
   createResources,
   getResources,
   assignPermissionToResource,
