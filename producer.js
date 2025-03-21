@@ -1,22 +1,14 @@
 const amqp = require("amqplib");
+require('dotenv').config()
 
-async function sendMessageToQueue(messagePayload, groupId = "") {
+async function sendMessageToQueue(messagePayload) {
   try {
-    const connection = await amqp.connect("amqp://localhost:5672");
+    const connection = await amqp.connect(process.env.REDIS_URL);
 
     const channel = await connection.createChannel();
     const queue = "task_queue";
 
     await channel.assertQueue(queue, { durable: true });
-
-    // not need to send payload from here, userService se hi kr skte hai.
-    const messageData = {
-      id: new Date().getTime(),
-      userId: messagePayload.userId,
-      email: messagePayload.email,
-      content: messagePayload.content,
-      groupId,
-    };
 
     channel.sendToQueue(queue, Buffer.from(JSON.stringify(messageData)), {
       persistent: true,

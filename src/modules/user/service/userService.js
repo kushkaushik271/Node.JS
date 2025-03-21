@@ -180,9 +180,10 @@ const sendGroupMessage = async (senderId, senderEmail, content) => {
     userId: senderId,
     email: senderEmail,
     content: content,
+    groupId: "12345"
   };
 
-  await sendMessageToQueue(messagePayload, "12345");
+  await sendMessageToQueue(messagePayload);
 };
 
 const generateTokens = async (user) => {
