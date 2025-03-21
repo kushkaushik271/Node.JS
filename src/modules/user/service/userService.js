@@ -185,6 +185,21 @@ const sendGroupMessage = async (senderId, senderEmail, content) => {
   await sendMessageToQueue(messagePayload, "12345");
 };
 
+const generateTokens = async (user) => {
+  const accessToken = jwt.sign(
+    { userId: user.userId, useremail: user.useremail, isActive: user.isActive },
+    process.env.JWT_SECRET,
+    { expiresIn: ACCESS_TOKEN_EXPIRATION }
+  );
+  const refreshToken = jwt.sign(
+    { userId: user.userId, useremail: user.useremail, isActive: user.isActive },
+    process.env.JWT_SECRET,
+    { expiresIn: REFRESH_TOKEN_EXPIRATION }
+  );
+
+  return { accessToken, refreshToken };
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -197,4 +212,5 @@ module.exports = {
   updateById,
   sendMessageToUser,
   sendGroupMessage,
+  generateTokens
 };

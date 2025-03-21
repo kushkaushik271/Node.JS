@@ -9,6 +9,7 @@ async function sendMessageToQueue(messagePayload, groupId = "") {
 
     await channel.assertQueue(queue, { durable: true });
 
+    // not need to send payload from here, userService se hi kr skte hai.
     const messageData = {
       id: new Date().getTime(),
       userId: messagePayload.userId,
