@@ -1,0 +1,220 @@
+const User = require("../model/userModel");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { sendResetPasswordEmail, sendVerificationEmail } = require("../../../services/emailService");
+const tempUser = require("../model/tempUserSchema");
+const sendMessageToQueue = require("../../../../producer");
+const { ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION } = require("../../../constants/constant");
+require("dotenv").config();
+// const sendMessageToQueue = require('../../../../producer')
+
+const registerUser = async (username, email, password) => {
+  const existingUser = await tempUser.findOne({ email });
+  const presentUser = await User.findOne({ email });
+
+  if (presentUser) {
+    throw new Error("User already registred.");
+  }
+
+  if (existingUser) {
+    throw new Error("Verification email already sent for this user");
+  }
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(password, salt);
+
+  const newUser = new tempUser({
+    username,
+    email,
+    passwordHash,
+  });
+
+  await newUser.save();
+
+  const verificationToken = jwt.sign({ email, userId: newUser._id }, process.env.JWT_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
+  });
+
+  await sendVerificationEmail(email, verificationToken);
+
+  return {
+    message: "Please check your email to verify your account.",
+    verificationToken,
+  };
+};
+
+const emailVerify = async (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const temperoryUser = await tempUser.findOne({ email: decoded.email });
+    if (!temperoryUser) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
+
+    const newUser = new User({
+      username: temperoryUser.username,
+      email: temperoryUser.email,
+      passwordHash: temperoryUser.passwordHash,
+    });
+
+    await newUser.save();
+
+    await tempUser.deleteOne({ email: decoded.email });
+
+    return { message: "Email verified successfully! You can now log in." };
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const loginUser = async (email, password) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("Invalid email or password.");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.passwordHash);
+  if (!isMatch) {
+    throw new Error("Invalid email or password.");
+  }
+
+  const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
+  });
+  const refreshToken = jwt.sign(
+    { userId: user._id, email: user.email },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: REFRESH_TOKEN_EXPIRATION },
+  );
+  return { token, refreshToken, userId: user._id };
+};
+
+const requestPasswordReset = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("User with this email does not exist.");
+  }
+
+  const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
+  });
+
+  await sendResetPasswordEmail(email, resetToken);
+
+  return { message: "Password reset link sent to email." };
+};
+
+const requestPasswordChange = async (token, newPassword) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    user.passwordHash = newPassword;
+
+    await user.save();
+    return { message: "Password reset successful. You can now log in." };
+  } catch (/* eslint-disable no-unused-vars */ error) {
+    throw new Error("Invalid or expired token.");
+  }
+};
+
+const deleteUserData = async (userId) => {
+  try {
+    await User.findByIdAndDelete(userId);
+    return { message: "User Deleted Successfully" };
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const refreshAccessToken = async (refreshToken) => {
+  const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+  const user = await User.findById(decoded.userId);
+  if (!user) {
+    throw new Error("Invalid refresh token.");
+  }
+
+  const newAccessToken = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRATION,
+  });
+
+  return newAccessToken;
+};
+
+const getAllUsers = async () => {
+  try {
+    const users = await User.find({}, "_id username email");
+    return users;
+  } catch (error) {
+    throw new Error("Error fetching users.");
+  }
+};
+
+const updateById = async (id, payload) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(id, payload, { new: true });
+    if (!updatedUser) {
+      throw new Error("User not found.");
+    }
+    return true;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const sendMessageToUser = async (userId, email, content) => {
+  const messagePayload = {
+    id: new Date().getTime(),
+    userId, // whom i want to send this message
+    email, // sender email
+    content, // sender want to send this content to specifc user
+  };
+  sendMessageToQueue(messagePayload);
+};
+
+const sendGroupMessage = async (senderId, senderEmail, content) => {
+  const messagePayload = {
+    id: new Date().getTime(),
+    userId: senderId,
+    email: senderEmail,
+    content: content,
+    groupId: "12345",
+  };
+
+  await sendMessageToQueue(messagePayload);
+};
+
+const generateTokens = async (user) => {
+  const accessToken = jwt.sign(
+    { userId: user.userId, useremail: user.useremail, isActive: user.isActive },
+    process.env.JWT_SECRET,
+    { expiresIn: ACCESS_TOKEN_EXPIRATION },
+  );
+  const refreshToken = jwt.sign(
+    { userId: user.userId, useremail: user.useremail, isActive: user.isActive },
+    process.env.JWT_SECRET,
+    { expiresIn: REFRESH_TOKEN_EXPIRATION },
+  );
+
+  return { accessToken, refreshToken };
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  requestPasswordReset,
+  requestPasswordChange,
+  deleteUserData,
+  refreshAccessToken,
+  getAllUsers,
+  emailVerify,
+  updateById,
+  sendMessageToUser,
+  sendGroupMessage,
+  generateTokens,
+};
